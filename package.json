@@ -1,6 +1,6 @@
 {
   "name": "@ngnjs/queue",
-  "version": "1.0.0-alpha",
+  "version": "1.0.0-alpha.1",
   "description": "A lightweight NGN queue/taskrunner.",
   "type": "module",
   "main": "src/index.js",

@@ -47,6 +47,9 @@
     "replace": {
       "<#REPLACE_VERSION#>": "package.version"
     },
+    "embed": [
+      "@ngnjs/plugin"
+    ],
     "ci": {
       "verbose": true,
       "buildoption": {

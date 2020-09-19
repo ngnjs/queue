@@ -1,13 +1,11 @@
 import Reference from '@ngnjs/plugin'
-import Queue from './queue.js'
+import Processor from './queue.js'
 import Item from './item.js'
 
-const NGN = new Reference('^2.0.0')
-NGN.requires('EventEmitter', 'Middleware', 'WARN', 'INFO', 'ERROR')
+const NGN = new Reference().requires('EventEmitter', 'Middleware', 'WARN', 'INFO', 'ERROR')
+const { WARN, ERROR, EventEmitter, Middleware } = NGN
 
-const { WARN, INFO, ERROR, EventEmitter, Middleware } = NGN
-
-export default class Processor extends EventEmitter {
+export default class Queue extends EventEmitter {
   #queue
   #processing = false
   #cancelled = false
@@ -17,12 +15,12 @@ export default class Processor extends EventEmitter {
 
   constructor (cfg = {}) {
     super(...arguments)
-    
+
     // Create a task queue
-    this.#queue = new Queue({
+    this.#queue = new Processor({
       name: this.name,
-      description: `The processor/runner for the the ${this.name} queue.`, 
-      parent: this,
+      description: `The processor/runner for the the ${this.name} queue.`,
+      parent: this
     })
 
     this.#queue.relay('*', this)
@@ -43,7 +41,8 @@ export default class Processor extends EventEmitter {
           this.emit('status.change', { old, current: value })
         }
       }),
-      continue: NGN.get(() => this.#status === 'aborting')
+      continue: NGN.get(() => this.#status === 'aborting'),
+      moduleVersion: NGN.hiddenconstant('<#REPLACE_VERSION#>')
     })
 
     this.on('complete', () => this.reset())
@@ -102,7 +101,7 @@ export default class Processor extends EventEmitter {
       clearTimeout(this.#timer)
       this.emit('reset')
     })
-    
+
     this.#queue.reset()
   }
 
@@ -235,31 +234,31 @@ export default class Processor extends EventEmitter {
    * events simultaneously (in parallel).
    * @param {boolean} [sequential=false]
    * Set to `true` to run the queue items in a sequence.
-   * This will execute each method, one after the other. 
+   * This will execute each method, one after the other.
    * Each method must complete before the next is started.
    */
   run (sequential = false) {
     this.#cancelled = false
     this._status = 'pending'
-    
+
     if (this.#processing) {
       const message = `Cannot start processing of "${this.name}" queue (already running). Please wait for this process to complete before calling run() again.`
       WARN(message)
       this.emit('warning', message)
       return
     }
-    
+
     // Immediately "complete" when the queue is empty.
     if (this.#queue.size === 0) {
       this._status = 'pending'
       this.emit('complete')
       return
     }
-    
+
     // Update the status
     this.#processing = true
     this._status = 'running'
-    
+
     // Add a timer
     let activeItem
     if (this.#timeout > 0) {
@@ -275,7 +274,7 @@ export default class Processor extends EventEmitter {
       // const TOKEN = Symbol('queue runner')
       this.afterOnce('blah.blah', this.size, 'complete')
       for (const task of this.#queue.items) {
-        task.once('done', () => this.emit('blah.blah'))
+        // task.once('done', () => this.emit('blah.blah'))
         // task.once('task.done', () => console.log('here'))
         task.run()
       }

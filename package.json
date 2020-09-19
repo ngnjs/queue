@@ -1,24 +1,30 @@
 {
-  "name": "ngn-queue",
+  "name": "@ngnjs/queue",
   "version": "1.0.0-alpha",
   "description": "A lightweight NGN queue/taskrunner.",
   "type": "module",
+  "main": "src/index.js",
+  "module": "index.js",
+  "browser": "./index.js",
   "author": "Corey Butler",
   "private": false,
   "license": "MIT",
-  "homepage": "https://github.com/ngnjs/plugin-queue",
+  "homepage": "https://github.com/ngnjs/queue",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ngnjs/plugin-queue.git"
+    "url": "https://github.com/ngnjs/queue.git"
   },
   "bugs": {
-    "url": "https://github.com/ngnjs/plugin-queue/issues"
+    "url": "https://github.com/ngnjs/queue/issues"
   },
-  "main": "src/index.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "@author.io/dev": "^1.1.2",
+    "@ngnjs/queue-debug": "^1.0.0-alpha",
+    "@ngnjs/plugin-debug": "^1.0.0-alpha"
+  },
   "peerDependencies": {
     "ngn": "^2.0.0",
-    "ngn-plugin": "^1.0.0-alpha"
+    "@ngnjs/plugin": ">=1.0.0-alpha.8"
   },
   "dependencies": {},
   "scripts": {
@@ -37,16 +43,30 @@
   },
   "dev": {
     "mode": "source",
-    "volume": [
-      "../core/.dist/ngn:/node_modules/ngn",
-      "../core/src:/source/ngn",
-      "../plugin/.dist/plugin:/node_modules/@ngnjs/plugin",
-      "../plugin/src:/source/@ngnjs/plugin"
-    ],
     "replace": {
-      "<#REPLACE_VERSION#>": "2.0.0"
+      "<#REPLACE_VERSION#>": "package.version"
+    },
+    "ci": {
+      "verbose": true,
+      "buildoption": {
+        "preserveEntrySignatures": true
+      },
+      "alias": {
+        "ngn": "/node_modules/ngn/index.js",
+        "@ngnjs/plugin": "/node_modules/@ngnjs/plugin/index.js",
+        "@ngnjs/queue": "/app/.dist/queue/index.js"
+      }
     },
     "source": {
+      "volume": [
+        "../core/.dist/ngn:/node_modules/ngn",
+        "../core/src:/source/ngn",
+        "../plugin/.dist/plugin:/node_modules/@ngnjs/plugin",
+        "../plugin/src:/source/@ngnjs/plugin"
+      ],
+      "buildoption": {
+        "preserveEntrySignatures": true
+      },
       "alias": {
         "ngn": "/node_modules/ngn/index.js",
         "@ngnjs/plugin": "/source/@ngnjs/plugin/index.js",

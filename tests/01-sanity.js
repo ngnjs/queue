@@ -10,10 +10,13 @@ test('Sanity', t => {
 
   const TaskRunner = new Queue()
   t.ok(typeof TaskRunner === 'object', 'The plugin class is recognized.')
-  t.ok(NGN.Queue !== undefined, 'The exported queue is available directly on the NGN namespace.')
+
+  // This functionality/test was removed so the NGN namespace does not need to be a Proxy
+  // t.ok(NGN.Queue !== undefined, 'The exported queue is available directly on the NGN namespace.')
+  t.ok(NGN.plugins.Queue !== undefined, 'The exported queue is available from the NGN.plugin namespace.')
 
   const ngn = new Reference(NGN.version)
-  t.ok(NGN.Queue !== undefined, 'The queue is available within the NGN reference.')
+  t.ok(ngn.Queue !== undefined, 'The queue is available within the NGN reference.')
   t.end()
 })
 

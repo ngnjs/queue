@@ -1,6 +1,6 @@
 import Reference from '@ngnjs/plugin'
 
-const NGN = new Reference('2.0.0')
+const NGN = new Reference()
 
 NGN.requires('EventEmitter', 'WARN', 'INFO', 'get')
 
@@ -47,10 +47,10 @@ export default class Item extends NGN.EventEmitter {
     if (typeof cfg.timeout === 'number') {
       this.timeout = cfg.timeout
     }
-    
+
     Object.defineProperty(this, '_dsc', NGN.get(() => `${this.name} of ${this.parent ? this.parent.name : 'unknown'} queue`))
-    
-    this.on('fail', () => this.#status = 'failed')
+
+    this.on('fail', () => { this.#status = 'failed' })
     this.on('timeout', ms => {
       this.#status = 'timedout'
       INFO('QUEUE.TASK.TIMEOUT', `${this._dsc} timed out${ms ? ' after ' + ms + 'ms' : ''}.`)

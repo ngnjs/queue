@@ -52,6 +52,7 @@
     ],
     "ci": {
       "verbose": true,
+      "peer": true,
       "alias": {
         "ngn": "/node_modules/ngn/index.js",
         "@ngnjs/plugin": "/node_modules/@ngnjs/plugin/index.js",

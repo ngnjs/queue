@@ -297,9 +297,11 @@ export default class Queue extends EventEmitter {
   }
 
   abort (timeout = false, task) {
-    this.#cancelled = true
-    clearTimeout(this.#timer)
-    this._status = timeout ? 'timeout' : 'aborting'
-    this.emit(timeout ? 'timeout' : 'aborted', task)
+    if (!this.#cancelled) {
+      this.#cancelled = true
+      clearTimeout(this.#timer)
+      this._status = timeout ? 'timeout' : 'aborting'
+      this.emit(timeout ? 'timeout' : 'aborted', task)
+    }
   }
 }

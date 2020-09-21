@@ -110,7 +110,7 @@ export default class Item extends NGN.EventEmitter {
     // If the item is part of a queue handled by a runner,
     // respect the state of the runner.
     if (this.parent && this.parent.parent) {
-      if (this.parent.parent.continue) {
+      if (!this.parent.parent.continue) {
         return
       }
     }

@@ -265,17 +265,12 @@ export default class Queue extends EventEmitter {
       this.#timer = setTimeout(() => this.abort(true, activeItem), this.#timeout)
     }
 
-    this.afterOnce('task.done', this.size, () => {
-      this.emit('complete')
-    })
-
     if (!sequential) {
+      this.afterOnce('task.done', this.size, 'complete')
+
       // Run in parallel
       // const TOKEN = Symbol('queue runner')
-      this.afterOnce('blah.blah', this.size, 'complete')
       for (const task of this.#queue.items) {
-        // task.once('done', () => this.emit('blah.blah'))
-        // task.once('task.done', () => console.log('here'))
         task.run()
       }
     } else {

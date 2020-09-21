@@ -97,9 +97,18 @@ test('NGN Queue parallel execution', t => {
     x.push('Task 3')
   })
 
+  let ended = false
   tasks.on('complete', function () {
+    if (ended) {
+      t.fail("'complete' event fired more than once.")
+      t.end()
+      return
+    }
+
+    ended = true
     t.expect(3, x.length, 'All functions ran in parallel.')
-    t.end()
+
+    setTimeout(() => t.end(), 300)
   })
 
   tasks.run()

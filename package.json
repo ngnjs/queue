@@ -1,6 +1,6 @@
 {
   "name": "@ngnjs/queue",
-  "version": "1.0.0-alpha.3",
+  "version": "1.0.0-alpha.4",
   "description": "A lightweight NGN queue/taskrunner.",
   "type": "module",
   "main": "src/index.js",
@@ -23,7 +23,7 @@
     "@ngnjs/plugin-debug": "^1.0.0-alpha"
   },
   "peerDependencies": {
-    "ngn": ">=2.0.0-alpha.5",
+    "ngn": "^2.0.0-alpha.5",
     "@ngnjs/plugin": ">=1.0.0-alpha.8"
   },
   "dependencies": {},
@@ -69,6 +69,9 @@
       "buildoption": {
         "preserveEntrySignatures": true
       },
+      "autoimport": [
+        "import ngn from 'ngn'"
+      ],
       "alias": {
         "ngn": "/node_modules/ngn/index.js",
         "@ngnjs/plugin": "/source/@ngnjs/plugin/index.js",

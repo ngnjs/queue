@@ -103,7 +103,7 @@ jobs:
         id: build_release
         if: steps.create_release.outputs.id != ''
         run: |
-          dev build --pack
+          dev build --pack --mode ci --peer
           cp -rf .dist ./dist
 
         # Upload tarballs to the release.

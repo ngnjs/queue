@@ -24,6 +24,7 @@ export default class Queue extends EventEmitter {
     })
 
     this.#queue.relay('*', this)
+    this.#queue.on('task.abort', task => this.abort(false, task))
 
     /**
      * @cfg {number} [timeout=0]

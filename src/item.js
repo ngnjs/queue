@@ -16,7 +16,7 @@ export default class Item extends NGN.EventEmitter {
   #done = () => {
     clearTimeout(this.#timer)
     this.#status = 'complete'
-    this.emit('complete', this)
+    this.emit('end', this)
     this.emit('done')
     INFO('QUEUE.TASK.DONE', `Finished processing ${this._dsc}.`)
   }

@@ -9,7 +9,7 @@ test('Sanity', t => {
   }
 
   const TaskRunner = new Queue()
-  t.ok(typeof TaskRunner === 'object', 'The plugin class is recognized.')
+  t.expect('object', typeof TaskRunner, 'The plugin class is recognized.')
 
   // This functionality/test was removed so the NGN namespace does not need to be a Proxy
   // t.ok(NGN.Queue !== undefined, 'The exported queue is available directly on the NGN namespace.')
@@ -98,9 +98,9 @@ test('NGN Queue parallel execution', t => {
   })
 
   let ended = false
-  tasks.on('complete', function () {
+  tasks.on('end', function () {
     if (ended) {
-      t.fail("'complete' event fired more than once.")
+      t.fail("'end' event fired more than once.")
       t.end()
       return
     }
@@ -135,7 +135,7 @@ test('NGN Queue Async execution', t => {
     x.push('Task 3')
   })
 
-  tasks.on('complete', function () {
+  tasks.on('end', function () {
     t.ok(x.length === 3, 'Invalid result.' + x.toString())
     t.end()
   })
@@ -247,7 +247,7 @@ test('NGN Queue Simple linear execution', t => {
     x.push(3)
   })
 
-  tasks.on('complete', function () {
+  tasks.on('end', function () {
     t.ok(x[0] === 1 && x[1] === 2 && x[2] === 3, 'Invalid result.' + x.toString())
     t.end()
   })
@@ -280,7 +280,7 @@ test('NGN Queue Asynchronous sequential execution', t => {
 
   extra.skip()
 
-  tasks.on('complete', function () {
+  tasks.on('end', function () {
     t.ok(x.length === 3, 'Appropriately skipped step.')
     t.ok(x[0] === 1 && x[1] === 2 && x[2] === 3, 'Valid result: ' + x.toString())
     t.end()
@@ -326,7 +326,7 @@ test('NGN Queue Abort Process', t => {
 
 test('NGN Queue Process an empty queue.', t => {
   const tasks = new Queue()
-  tasks.on('complete', function () {
+  tasks.on('end', function () {
     t.pass('No error on empty task.')
     tasks.reset()
     t.end()

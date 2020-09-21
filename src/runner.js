@@ -45,7 +45,7 @@ export default class Queue extends EventEmitter {
       moduleVersion: NGN.hiddenconstant('<#REPLACE_VERSION#>')
     })
 
-    this.on('complete', () => this.reset())
+    this.on('end', () => this.reset())
 
     // Add the cancel alias.
     this.alias('cancel', this.abort)
@@ -251,7 +251,7 @@ export default class Queue extends EventEmitter {
     // Immediately "complete" when the queue is empty.
     if (this.#queue.size === 0) {
       this._status = 'pending'
-      this.emit('complete')
+      this.emit('end')
       return
     }
 
@@ -266,7 +266,7 @@ export default class Queue extends EventEmitter {
     }
 
     if (!sequential) {
-      this.afterOnce('task.done', this.size, 'complete')
+      this.afterOnce('task.done', this.size, 'end')
 
       // Run in parallel
       // const TOKEN = Symbol('queue runner')
@@ -284,7 +284,7 @@ export default class Queue extends EventEmitter {
         })
       }
 
-      process.run(() => this.emit('complete'))
+      process.run(() => this.emit('end'))
     }
   }
 

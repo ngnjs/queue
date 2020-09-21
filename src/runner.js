@@ -42,8 +42,7 @@ export default class Queue extends EventEmitter {
           this.emit('status.change', { old, current: value })
         }
       }),
-      continue: NGN.get(() => this.#status !== 'aborting' && this.#status !== 'cancelled'),
-      moduleVersion: NGN.hiddenconstant('<#REPLACE_VERSION#>')
+      continue: NGN.get(() => this.#status !== 'aborting' && this.#status !== 'cancelled')
     })
 
     this.on('end', () => this.reset())

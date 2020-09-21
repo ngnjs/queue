@@ -6,3 +6,5 @@ export {
   Queue,
   Task
 }
+
+export const moduleVersion = '<#REPLACE_VERSION#>'

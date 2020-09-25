@@ -1,6 +1,6 @@
 {
   "name": "@ngnjs/queue",
-  "version": "1.0.0-alpha.9",
+  "version": "1.0.0-alpha.10",
   "description": "A lightweight NGN queue (taskrunner).",
   "type": "module",
   "main": "src/index.js",
@@ -47,12 +47,12 @@
     "replace": {
       "<#REPLACE_VERSION#>": "package.version"
     },
-    "embed": [
-      "@ngnjs/plugin"
-    ],
     "ci": {
       "verbose": true,
       "peer": true,
+      "embed": [
+        "@ngnjs/plugin"
+      ],
       "alias": {
         "ngn": "/node_modules/ngn/index.js",
         "@ngnjs/plugin": "/node_modules/@ngnjs/plugin/index.js",

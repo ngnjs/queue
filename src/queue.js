@@ -48,9 +48,9 @@ export default class Queue extends NGN.EventEmitter {
   }
 
   /**
-   * Remove an queue item.
+   * Remove a queue item.
    * @param {Item[]} Item
-   * Any number of queue items (or queue item indexes) can be added.
+   * Any number of queue items (or queue item indexes) can be removed.
    */
   remove () {
     for (const item of arguments) {

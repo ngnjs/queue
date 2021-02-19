@@ -211,7 +211,7 @@ test('NGN Queue Abort Process', t => {
     })
   }
 
-  tasks.on('aborted', function () {
+  tasks.on('abort', function () {
     setTimeout(function () {
       if (total !== 50) {
         t.fail('Running steps were cancelled.')
@@ -289,7 +289,7 @@ test('NGN Queue Asynchronous sequential execution', t => {
   tasks.runSync()
 })
 
-test('NGN Queue Abort Process', t => {
+test('NGN Queue Abort Process (synchronous)', t => {
   t.timeoutAfter(5000)
 
   const tasks = new Queue()
@@ -304,7 +304,7 @@ test('NGN Queue Abort Process', t => {
     })
   }
 
-  tasks.on('aborted', function () {
+  tasks.on('abort', function () {
     setTimeout(function () {
       if (totalSync !== 1) {
         t.fail('Queued steps were not cancelled.')

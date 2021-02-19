@@ -1,6 +1,8 @@
 import Reference from '@ngnjs/plugin'
 import Processor from './queue.js'
 import Item from './item.js'
+import RateLimiter from './ratelimiter.js'
+import Throttle from './throttle.js'
 
 const NGN = new Reference().requires('EventEmitter', 'Middleware', 'WARN', 'INFO', 'ERROR')
 const { WARN, ERROR, EventEmitter, Middleware } = NGN
@@ -12,9 +14,20 @@ export default class Queue extends EventEmitter {
   #status = 'pending'
   #timer
   #timeout = 0
+  #ratelimit = null
+  #maxconcurrent
+  #progress = { completed: 0, total: 0 }
 
   constructor (cfg = {}) {
     super(...arguments)
+
+    if (cfg.rateLimit) {
+      this.rate = cfg.rateLimit
+    }
+
+    if (cfg.maxConcurrent) {
+      this.maxConcurrent = cfg.maxConcurrent
+    }
 
     // Create a task queue
     this.#queue = new Processor({
@@ -96,6 +109,116 @@ export default class Queue extends EventEmitter {
 
   get status () {
     return this.#status
+  }
+
+  /**
+   * Rate limiting restricts the maximum number of tasks
+   * which run within the specified duration. For example,
+   * a max of 100 tasks per 60 seconds (60K milliseconds)
+   * will will take 10 minutes to process 1000 tasks
+   * (1000 tasks/100 tasks/minute = 10 minutes).
+   * @param {numeric} max
+   * @param {numeric} duration
+   */
+  rateLimit (max, duration) {
+    if (isNaN(max) || max <= 0) {
+      this.#ratelimit = null
+      return
+    }
+
+    if (isNaN(max) || isNaN(duration)) {
+      throw new Error('rate limiting requires a count and duration (milliseconds)')
+    }
+
+    this.#ratelimit = [max, duration]
+  }
+
+  /**
+   * Remove rate limiting (if set).
+   */
+  removeRateLimit () {
+    this.#ratelimit = null
+  }
+
+  /**
+   * @param {Array} rate
+   * A shortcut attribute for setting the rate limit.
+   * This must be a 2 element array (ex: `[100, 60000]`)
+   * or `null` (to remove rate).
+   */
+  set rate (value) {
+    if (!Array.isArray(value) || value.length !== 2) {
+      throw new Error('rate attribute only accepts an array with 2 numeric elements')
+    }
+
+    this.rateLimit(...value)
+  }
+
+  get rate () {
+    return this.#ratelimit
+  }
+
+  /**
+   * @param {numeric} maxConcurrent
+   * The maximum concurrent number of tasks allowed to
+   * operate at the same time. Set this to `null` or any
+   * value `<= 0` to remove concurrency limits.
+   */
+  set maxConcurrent (value) {
+    if (value === null) {
+      this.#maxconcurrent = null
+      return
+    }
+
+    if (isNaN(value)) {
+      throw new Error('maxConcurrent must be a number or null.')
+    }
+
+    if (value < 0) {
+      this.#maxconcurrent = null
+      return
+    }
+
+    this.#maxconcurrent = value
+  }
+
+  get maxConcurrent () {
+    return this.#maxconcurrent
+  }
+
+  /**
+   * @typedef plan
+   * The expected operation plan.
+   * @param {numeric} tasksRemaining
+   * The number of tasks which still need to be processed
+   * @param {numeric} tasksCompleted
+   * The number of tasks which have been completed
+   * @param {numeric} minimumDuration
+   * The minimum duration (in milliseconds) the queue will take to complete.
+   * This is calculated using the rate limit.
+   */
+
+  /**
+   * @param {object} plan
+   * Returns a plan object.
+   */
+  get plan () {
+    if (this.#progress.total === 0 && this.#queue.items.length > 0) {
+      this.#progress.total = this.#queue.items.length
+    }
+
+    const plan = {
+      tasksRemaining: this.#progress.total - this.#progress.completed,
+      tasksCompleted: this.#progress.completed
+    }
+
+    if (Array.isArray(this.#ratelimit)) {
+      plan.minimumDuration = (this.#progress.total / this.#ratelimit[0]) * this.#ratelimit[1]
+    } else {
+      plan.minimumDuration = null
+    }
+
+    return Object.freeze(plan)
   }
 
   reset () {
@@ -252,6 +375,8 @@ export default class Queue extends EventEmitter {
       return
     }
 
+    this.#progress = { completed: 0, total: 0 }
+
     // Immediately "complete" when the queue is empty.
     if (this.#queue.size === 0) {
       this._status = 'pending'
@@ -261,6 +386,8 @@ export default class Queue extends EventEmitter {
 
     // Update the status
     this.#processing = true
+    this.#progress.total = this.#queue.items.length
+    this.#progress.completed = 0
     this._status = 'running'
 
     // Add a timer
@@ -269,12 +396,44 @@ export default class Queue extends EventEmitter {
       this.#timer = setTimeout(() => this.abort(true, activeItem), this.#timeout)
     }
 
+    const isConcurrencyLimited = !isNaN(this.#maxconcurrent) && this.#maxconcurrent > 0
+    const isRateLimited = this.#ratelimit !== null
+    const isLimited = isConcurrencyLimited || isRateLimited
+
+    if (isLimited) {
+      if (isRateLimited) {
+        const limiter = new RateLimiter(...this.#ratelimit, this.#queue.items)
+
+        if (isConcurrencyLimited) {
+          limiter.maxConcurrent = this.#maxconcurrent
+        }
+
+        limiter.on('activetask', item => { activeItem = item })
+        limiter.on('task.done', task => { this.#progress.completed += 1 })
+        limiter.relay('batch.*', this, 'limited')
+        limiter.on('done', () => this.emit('end'))
+
+        ;(async () => {
+          await limiter.run(sequential)
+        })()
+
+        return
+      } else if (!sequential) {
+        const limiter = new Throttle(this.#maxconcurrent, this.#queue.items)
+        limiter.on('task.done', task => { this.#progress.completed += 1 })
+        limiter.on('done', () => this.emit('end'))
+        limiter.run()
+        return
+      }
+    }
+
     if (!sequential) {
       this.afterOnce('task.done', this.size, 'end')
 
       // Run in parallel
       // const TOKEN = Symbol('queue runner')
       for (const task of this.#queue.items) {
+        task.once('done', () => { this.#progress.completed += 1 })
         task.run()
       }
     } else {
@@ -283,7 +442,10 @@ export default class Queue extends EventEmitter {
       for (const task of this.#queue.items) {
         process.use(next => {
           activeItem = task
-          task.once('done', next)
+          task.once('done', () => {
+            this.#progress.completed += 1
+            next()
+          })
           task.run()
         })
       }

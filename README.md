@@ -1,4 +1,5 @@
 <h1 align="center">NGN Queue<br/><img src="https://img.shields.io/npm/v/@ngnjs/queue?label=%40ngnjs/queue&logo=npm&style=social"/></h1>
+<div align="center"><em>A plugin for <a href="https://github.com/ngnjs/ngn">NGN</a></em></div><br/>
 
 The NGN Queue is a collection of functions, stored in the order they're added t othe collection. "Running" a queue executes these functions, in parallel or sequentially.
 

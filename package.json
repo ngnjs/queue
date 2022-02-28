@@ -1,11 +1,20 @@
 {
   "name": "@ngnjs/queue",
-  "version": "1.0.0-alpha.11",
+  "version": "1.0.0-alpha.12",
   "description": "A lightweight NGN queue (taskrunner).",
   "type": "module",
-  "main": "src/index.js",
+  "main": "./src/index.js",
   "module": "index.js",
+  "exports": {
+    ".": {
+      "import": "./index.js"
+    }
+  },
   "browser": "./index.js",
+  "directories": {
+    "lib": "src/lib"
+  },
+  "sideEffects": false,
   "author": "Corey Butler",
   "private": false,
   "license": "MIT",
